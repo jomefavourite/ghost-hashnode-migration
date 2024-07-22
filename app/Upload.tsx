@@ -82,6 +82,7 @@ const Upload = () => {
   }, [progress]);
 
   const handleFileChange = (event: React.ChangeEvent) => {
+    // @ts-ignore
     const file = event.target?.files[0];
     if (file && file.type === 'application/json') {
       const reader = new FileReader();
