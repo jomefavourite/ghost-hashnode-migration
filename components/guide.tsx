@@ -24,8 +24,8 @@ export default function Guide() {
         <Drawer.Portal>
           <Drawer.Overlay className='fixed inset-0 bg-black/40' />
           <Drawer.Content className='overflow-y-scroll overflow-x-hidden bg-white flex flex-col rounded-t-[10px] h-full w-full sm:w-[600px] mt-24 fixed bottom-0 right-0'>
-            <div className='p-4 bg-white flex-1 h-full'>
-              <div className='max-w-md mx-auto'>
+            <div className='p-4 bg-white flex-1 h-full overflow-y-auto'>
+              <div className='max-w-md mx-auto mt-10'>
                 <Drawer.Title className='font-bold mb-4'>
                   How to export your Ghost blog contents
                 </Drawer.Title>
