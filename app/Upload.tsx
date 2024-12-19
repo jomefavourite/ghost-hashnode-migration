@@ -86,7 +86,7 @@ const preprocessHtml = async (
   const images = doc.querySelectorAll('img');
 
   // Process each image asynchronously
-  Array.from(images).forEach(async (img) => {
+  for (const img of Array.from(images)) {
     const src = img.getAttribute('src');
     const alt = img.getAttribute('alt') || '';
 
@@ -106,7 +106,7 @@ const preprocessHtml = async (
         console.error('Error uploading image:', error);
       }
     }
-  });
+  }
 
   return doc.body.innerHTML; // Return the processed HTML
 };
@@ -233,56 +233,59 @@ const Upload = () => {
     // return;
     setIsLoading(true);
 
+    let completedPosts = 0;
+
     posts.forEach(async (post: any) => {
-      const html = await preprocessHtml(
-        post.html,
-        values.ghostUrl,
-        values.token
-      );
-      const markdown = turndownService.turndown(html);
+      try {
+        const html = await preprocessHtml(
+          post.html,
+          values.ghostUrl,
+          values.token
+        );
+        const markdown = turndownService.turndown(html);
 
-      const imageURL = isUrl(post.feature_image)
-        ? post.feature_image
-        : post.feature_image?.includes('__GHOST_URL__')
-        ? post.feature_image.replace('__GHOST_URL__', values.ghostUrl)
-        : '';
+        const imageURL = isUrl(post.feature_image)
+          ? post.feature_image
+          : post.feature_image?.includes('__GHOST_URL__')
+          ? post.feature_image.replace('__GHOST_URL__', values.ghostUrl)
+          : '';
 
-      const response = await client
-        .setHeader('Authorization', tokenValue)
-        .request<UploadImageResponse>(UploadImageByURL, { url: imageURL });
+        const response = await client
+          .setHeader('Authorization', tokenValue)
+          .request<UploadImageResponse>(UploadImageByURL, { url: imageURL });
 
-      const hashnodeImageURL = response.uploadImageByURL?.imageURL || imageURL;
+        const hashnodeImageURL =
+          response.uploadImageByURL?.imageURL || imageURL;
 
-      // console.log(markdown, 'markdown');
-      // return;
-      await client
-        .setHeader('Authorization', values.token)
-        .request(CreateDraft, {
-          input: {
-            title: post.title,
-            slug: post.slug,
-            contentMarkdown: markdown,
-            publicationId: values.publicationId,
-            tags: [],
-            coverImageOptions: {
-              coverImageURL:
-                hashnodeImageURL.length > 0 ? hashnodeImageURL : null,
+        // console.log(markdown, 'markdown');
+        // return;
+        await client
+          .setHeader('Authorization', values.token)
+          .request(CreateDraft, {
+            input: {
+              title: post.title,
+              slug: post.slug,
+              contentMarkdown: markdown,
+              publicationId: values.publicationId,
+              tags: [],
+              coverImageOptions: {
+                coverImageURL:
+                  hashnodeImageURL.length > 0 ? hashnodeImageURL : null,
+              },
+              publishedAt: post.published_at,
+              originalArticleURL: post.canonical_url,
             },
-            publishedAt: post.published_at,
-            originalArticleURL: post.canonical_url,
-          },
-        })
-        .then(() => {
-          setProgress((prev) => {
-            return Math.round(prev + 100 / posts.length);
-          });
-        })
-        .catch((err) => console.log(err));
-      // .finally(() => {
-      //   setProgress((prev) => {
-      //     return 100;
-      //   });
-      // });
+          })
+          .catch((err) => console.log(err));
+
+        completedPosts++;
+        setProgress(Math.round((completedPosts / posts.length) * 100));
+      } catch (err) {
+        console.log(err);
+        // Optionally handle failed posts differently
+        completedPosts++;
+        setProgress(Math.round((completedPosts / posts.length) * 100));
+      }
     });
   };
 
