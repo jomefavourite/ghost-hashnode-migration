@@ -69,6 +69,12 @@ const UploadImageByURL = gql`
   }
 `;
 
+type UploadImageResponse = {
+  uploadImageByURL: {
+    imageURL: string;
+  };
+};
+
 const preprocessHtml = async (
   htmlString: string,
   ghostUrlValue: string,
@@ -80,7 +86,7 @@ const preprocessHtml = async (
   const images = doc.querySelectorAll('img');
 
   // Process each image asynchronously
-  for (const img of images) {
+  Array.from(images).forEach(async (img) => {
     const src = img.getAttribute('src');
     const alt = img.getAttribute('alt') || '';
 
@@ -90,7 +96,7 @@ const preprocessHtml = async (
       try {
         const response = await client
           .setHeader('Authorization', tokenValue)
-          .request(UploadImageByURL, { url: imageURL });
+          .request<UploadImageResponse>(UploadImageByURL, { url: imageURL });
 
         if (response?.uploadImageByURL?.imageURL) {
           // Replace the src in the original HTML with the resolved URL
@@ -100,7 +106,7 @@ const preprocessHtml = async (
         console.error('Error uploading image:', error);
       }
     }
-  }
+  });
 
   return doc.body.innerHTML; // Return the processed HTML
 };
@@ -243,14 +249,9 @@ const Upload = () => {
 
       const response = await client
         .setHeader('Authorization', tokenValue)
-        .request(UploadImageByURL, { url: imageURL })
-        .catch((err) => console.log(err));
+        .request<UploadImageResponse>(UploadImageByURL, { url: imageURL });
 
-      // console.log(response, 'response Image');
-
-      const hashnodeImageURL = response?.uploadImageByURL
-        ? response?.uploadImageByURL?.imageURL
-        : imageURL;
+      const hashnodeImageURL = response.uploadImageByURL?.imageURL || imageURL;
 
       // console.log(markdown, 'markdown');
       // return;
