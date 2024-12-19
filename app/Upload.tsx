@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { gql, GraphQLClient } from 'graphql-request';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -69,7 +69,11 @@ const UploadImageByURL = gql`
   }
 `;
 
-const preprocessHtml = async (htmlString, ghostUrlValue, tokenValue) => {
+const preprocessHtml = async (
+  htmlString: string,
+  ghostUrlValue: string,
+  tokenValue: string
+) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlString, 'text/html');
 
