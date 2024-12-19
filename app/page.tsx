@@ -26,6 +26,7 @@ export default function Home() {
             <li>
               - Tags from Ghost don't get added to your Hashnode blog draft
             </li>
+            <li>- Some embeds may not work properly. (GitHub gist supported)</li>
           </ul>
         </div>
       </div>
